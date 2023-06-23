@@ -20,10 +20,7 @@ public class BotMessage {
     public string ButtonCallback { get; set; } = string.Empty;
 }
 
-
-
 public class TextQuestUnit {
-    
     public string Question { get; set; } = string.Empty;
     public string Image { get; set; } = string.Empty;
     public List<string> TrueAnswers { get; set; } = new List<string>();

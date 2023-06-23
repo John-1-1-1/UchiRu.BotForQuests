@@ -24,7 +24,7 @@ public class Worker : BackgroundService {
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-        _telegramBot = new TelegramBot(_configuration, _optionsService, _dataBaseService);
+        _telegramBot = new TelegramBot(_optionsService, _dataBaseService, _configuration);
         _telegramBot.Start(stoppingToken);
         
         while (!stoppingToken.IsCancellationRequested) {
