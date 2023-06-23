@@ -1,0 +1,79 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\john_\\RiderProjects\\UchiRu.BotForQuests\\src\\UchiRu.BotForQuests.Service\\UchiRu.BotForQuests.Service.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\john_\\RiderProjects\\UchiRu.BotForQuests\\src\\UchiRu.BotForQuests.Service\\UchiRu.BotForQuests.Service.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\john_\\RiderProjects\\UchiRu.BotForQuests\\src\\UchiRu.BotForQuests.Service\\UchiRu.BotForQuests.Service.csproj",
+        "projectName": "UchiRu.BotForQuests.Service",
+        "projectPath": "C:\\Users\\john_\\RiderProjects\\UchiRu.BotForQuests\\src\\UchiRu.BotForQuests.Service\\UchiRu.BotForQuests.Service.csproj",
+        "packagesPath": "C:\\Users\\john_\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\john_\\RiderProjects\\UchiRu.BotForQuests\\src\\UchiRu.BotForQuests.Service\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\john_\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net7.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net7.0": {
+            "targetAlias": "net7.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net7.0": {
+          "targetAlias": "net7.0",
+          "dependencies": {
+            "Microsoft.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[7.0.1, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[8.0.0-preview.4, )"
+            },
+            "Telegram.Bot": {
+              "target": "Package",
+              "version": "[19.0.0, )"
+            },
+            "VkNet": {
+              "target": "Package",
+              "version": "[1.74.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Users\\john_\\.dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
