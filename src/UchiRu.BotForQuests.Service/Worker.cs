@@ -16,15 +16,16 @@ public class Worker : BackgroundService {
     public Worker(ILogger<Worker> logger, 
         DataBaseService dataBaseService,
         IConfiguration configuration, 
-        OptionsService optionsService) {
+        OptionsService optionsService,
+        TelegramBot telegramBot) {
         _logger = logger;
         _dataBaseService = dataBaseService;
         _configuration = configuration;
         _optionsService = optionsService;
+        _telegramBot = telegramBot;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-        _telegramBot = new TelegramBot(_optionsService, _dataBaseService, _configuration);
         _telegramBot.Start(stoppingToken);
         
         while (!stoppingToken.IsCancellationRequested) {

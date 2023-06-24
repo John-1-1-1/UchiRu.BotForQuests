@@ -1,24 +1,25 @@
 using Telegram.Bot;
-using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 using UchiRu.BotForQuests.Service.Services.EfDataBaseService;
 using UchiRu.BotForQuests.Service.Services.QuestsListOptions;
+using static Newtonsoft.Json.JsonConvert;
 
 namespace UchiRu.BotForQuests.Service.Services.TelegramBotService; 
 
-public class TelegramBot :TelegramBotBase{
+public class TelegramBot: TelegramBotBase{
     private readonly OptionsService _optionsService;
-
     private readonly DataBaseService _dataBaseService;
+    private readonly ILogger<TelegramBot> _logger;
 
     public TelegramBot(
         OptionsService optionsService,
         DataBaseService dataBaseService,
-        IConfiguration configuration) : base(configuration)
+        IConfiguration configuration,
+        ILoggerFactory loggerFactory) : base(configuration)
     {
         _optionsService = optionsService;
         _dataBaseService = dataBaseService;
+        _logger = loggerFactory.CreateLogger<TelegramBot>();
     }
     
     private async Task CheckResult(string message, int level, long userId, 
@@ -39,7 +40,7 @@ public class TelegramBot :TelegramBotBase{
             
             await SendMessage(
                 new BotMessage() { Text = newTextQuestUnit.Question, 
-                    Image = newTextQuestUnit.Image 
+                    Image = newTextQuestUnit.Image
                 }, userId, cancellationToken); 
         }
         else {
@@ -61,7 +62,7 @@ public class TelegramBot :TelegramBotBase{
     public override async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken) {
 
-        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(update));
+        _logger.LogInformation(SerializeObject(update));
         
         if (update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery) {
             var message = _dataBaseService.AddUser(update.CallbackQuery!.From.Id, 0);
@@ -108,5 +109,6 @@ public class TelegramBot :TelegramBotBase{
     
     public override async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken) {
+        _logger.LogError(exception.Message);
     }
 }
