@@ -72,6 +72,28 @@ public abstract class TelegramBotBase {
             cancellationToken: cancellationToken
         );
     }
+    
+    public async Task SendFileAsync(long chatId, BotMessage message, CancellationToken cancellationToken) {
+
+        InlineKeyboardMarkup? markup = null;
+        
+        if (message.Button != string.Empty) {
+            markup = new(new[] {
+                new[] {
+                    InlineKeyboardButton.WithCallbackData(message.Button, message.ButtonCallback)
+                }
+            });
+        }
+        var fs = System.IO.File.OpenRead(message.File);
+        await _bot.SendDocumentAsync( 
+            chatId: chatId,
+            document: InputFile.FromStream(fs),
+            caption: message.Text,
+            replyMarkup: markup,
+            cancellationToken: cancellationToken
+        );
+    }
+
 
     public abstract Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken);

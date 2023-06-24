@@ -39,13 +39,14 @@ public class TelegramBot: TelegramBotBase{
             var newTextQuestUnit = _optionsService.GetQuestByUserLevel(level);
             
             await SendMessage(
-                new BotMessage() { Text = newTextQuestUnit.Question, 
+                new BotMessage() { 
+                    Text = newTextQuestUnit.Question, 
                     Image = newTextQuestUnit.Image
                 }, userId, cancellationToken); 
         }
         else {
             await SendMessage(
-                new BotMessage() { Text = "Неверно", 
+                new BotMessage() { Text = "Неверно. Пожалуйста не используйте пробелы, знаки препинания и специальные символы", 
                 }, userId, cancellationToken); 
         }
     }
@@ -53,6 +54,9 @@ public class TelegramBot: TelegramBotBase{
     public async Task SendMessage(BotMessage message, long userId, CancellationToken cancellationToken) {
         if (message.Image != string.Empty) {
             await SendImageAsync(userId, message, cancellationToken);
+        }
+        else if (message.File != string.Empty) {
+            await SendFileAsync(userId, message, cancellationToken);
         }
         else {
             await SendTextMessageAsync(userId, message, cancellationToken);

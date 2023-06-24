@@ -9,7 +9,7 @@ public class QuestionOptions {
     public string StartButtonCallback { get; set; } = string.Empty;
     public List<TextQuestUnit>? QuestUnits { get; set; }
     
-    public string EndMessage { get; set; } = string.Empty;
+    public TextQuestUnit EndMessage { get; set; }
 }
 
 public class BotMessage {
@@ -17,6 +17,7 @@ public class BotMessage {
     public string Text { get; set; } = string.Empty;
     public string Image { get; set; } = string.Empty;
     public string Button { get; set; } = string.Empty;
+    public string File { get; set; } = string.Empty;
     public string ButtonCallback { get; set; } = string.Empty;
 }
 

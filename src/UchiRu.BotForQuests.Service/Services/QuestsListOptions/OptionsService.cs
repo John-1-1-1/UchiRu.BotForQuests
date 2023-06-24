@@ -20,7 +20,7 @@ public class OptionsService {
     public TextQuestUnit GetQuestByUserLevel(int level) {
         if (level >= CountMessages)
         {
-            return new TextQuestUnit() { Question = _questionOptions.EndMessage};
+            return _questionOptions.EndMessage;
         }
         return _questionOptions.QuestUnits[level];
     }
