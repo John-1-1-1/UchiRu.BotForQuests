@@ -1,0 +1,8 @@
+{
+  "ListCommands": {
+    "restartCommand": "/restart",
+    "startCommand": "/start",
+    "listResultsCommand": "/getListResults",
+    "replayQuestion": "/replay"
+  }
+}

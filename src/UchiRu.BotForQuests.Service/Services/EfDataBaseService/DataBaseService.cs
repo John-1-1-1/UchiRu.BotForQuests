@@ -6,8 +6,7 @@ public class DataBaseService {
     public DataBaseService(UsersContext usersContext) {
         _usersContext = usersContext;
     }
-
-
+    
     public string AddUser(long fromId, int level) {
         var user = _usersContext.User.FirstOrDefault(u => u.UserId == fromId);
         
@@ -15,9 +14,7 @@ public class DataBaseService {
             _usersContext.User.Add(new User() 
                 {  UserId = fromId, Level = level});
         }
-        else { 
-            return "Вы уже проходите квест!";
-        }
+        
         _usersContext.SaveChanges();
         return string.Empty;
     }
@@ -30,7 +27,6 @@ public class DataBaseService {
              _usersContext.User.Update(user);
              _usersContext.SaveChanges();
          }
-        
     }
     
     public int GetUserLevel(long fromId) {
@@ -48,5 +44,19 @@ public class DataBaseService {
             _usersContext.User.Remove(user);
             _usersContext.SaveChanges();
         }
+    }
+
+    public Dictionary<int, int> GetResults() {
+        Dictionary<int, int> memberLevels = new Dictionary<int, int>();
+        foreach (var user in _usersContext.User.ToList()) {
+            if (memberLevels.ContainsKey(user.Level)) {
+                memberLevels[user.Level] += 1;
+            }
+            else {
+                memberLevels[user.Level] = 0;
+            }
+        }
+
+        return memberLevels;
     }
 }

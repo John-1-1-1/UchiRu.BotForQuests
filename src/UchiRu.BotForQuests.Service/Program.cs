@@ -6,6 +6,7 @@ using UchiRu.BotForQuests.Service.Services.TelegramBotService;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration.AddJsonFile("QuestList.json");
+builder.Configuration.AddJsonFile("listCommands.json");
 
 var questionOptions = new QuestionOptions();
 builder.Configuration.Bind(questionOptions);

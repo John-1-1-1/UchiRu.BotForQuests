@@ -8,7 +8,10 @@ public class OptionsService {
     }
 
     public int CountMessages => _questionOptions.QuestUnits.Count;
-    
+    public List<KeyboardText> Keyboard {
+        get => _questionOptions.Keyboard;
+    }
+
     public List<BotMessage> GetStartMessages() { 
         int count = _questionOptions.StartMessage.Count;
         var ret = _questionOptions.StartMessage;
@@ -17,15 +20,20 @@ public class OptionsService {
         return ret;
     }
     
-    public TextQuestUnit GetQuestByUserLevel(int level) {
-        if (level >= CountMessages)
-        {
+    public BotMessage GetQuestByUserLevel(int level) {
+        if (level >= CountMessages) {
             return _questionOptions.EndMessage;
         }
+
+        if (level < 0) {
+            return new BotMessage();
+        }
+        
         return _questionOptions.QuestUnits[level];
     }
 
-    public bool IsTrueAnswer(string answer, int level) {
-        return _questionOptions.QuestUnits[level].IsTrueAnswer(answer);
-    }
+    public bool IsTrueAnswer(string answer, int level) => 
+        _questionOptions.QuestUnits[level].IsTrueAnswer(answer);
+    
+    public string ErrorMessage() => _questionOptions.ErrorMessage;
 }
