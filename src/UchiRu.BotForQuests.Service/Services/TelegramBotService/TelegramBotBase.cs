@@ -54,7 +54,9 @@ public abstract class TelegramBotBase {
         }
 
         var listButtons =
-            _optionsService.Keyboard.Select(key =>
+            _optionsService.Keyboard.
+                Where(key => key.Visible != "false").
+                Select(key =>
             new List<KeyboardButton>(){(new KeyboardButton(key.Text))}).ToList();
         
         var keyboard = new ReplyKeyboardMarkup(listButtons);
@@ -63,7 +65,7 @@ public abstract class TelegramBotBase {
         return  keyboard;
     }
 
-    private async Task SendTextMessageAsync(long chatId, BotMessage message,
+    private async Task<BotMessage> SendTextMessageAsync(long chatId, BotMessage message,
         CancellationToken cancellationToken) {
 
         await _bot.SendTextMessageAsync(
@@ -71,9 +73,11 @@ public abstract class TelegramBotBase {
             text: message.Text, 
             cancellationToken: cancellationToken, 
             replyMarkup: GetKeyboardMarkup(message));
+        message.Text = string.Empty;
+        return message;
     }
 
-    private async Task SendImageAsync(long chatId, BotMessage message, CancellationToken cancellationToken) {
+    private async Task<BotMessage> SendImageAsync(long chatId, BotMessage message, CancellationToken cancellationToken) {
         
         var fs = System.IO.File.OpenRead(message.Image);
         await _bot.SendPhotoAsync( 
@@ -83,6 +87,9 @@ public abstract class TelegramBotBase {
             replyMarkup: GetKeyboardMarkup(message),
             cancellationToken: cancellationToken
         );
+        message.Text = string.Empty;
+        message.Image = string.Empty;
+        return message;
     }
 
     public async Task AnswerCallbackQueryAsync(Update update) {
@@ -99,38 +106,35 @@ public abstract class TelegramBotBase {
         }
     }
 
-    private async Task SendFileAsync(long chatId, BotMessage message, CancellationToken cancellationToken) {
-
-        var fs = System.IO.File.OpenRead(message.File);
-        await _bot.SendDocumentAsync( 
-            chatId: chatId,
-            document: InputFile.FromStream(fs),
-            caption: message.Text,
-            cancellationToken: cancellationToken
-        );
+    private async Task<BotMessage> SendStickerAsync(long chatId, BotMessage message, CancellationToken cancellationToken) {
+        InputFile n = InputFile.FromFileId(message.StickerId);
+        await _bot.SendStickerAsync(chatId: chatId,
+            sticker: n, cancellationToken: cancellationToken);
+        message.StickerId = string.Empty;
+        return message;
     }
 
     public async Task SendMessage(BotMessage message, long userId, CancellationToken cancellationToken) {
+
+        message = message.Copy();
+        
         if (message.Image != string.Empty) {
-            await SendImageAsync(userId, message, cancellationToken);
-            return;
+            message = await SendImageAsync(userId, message, cancellationToken);
         }
-        if (message.File != string.Empty) {
-            await SendFileAsync(userId, message, cancellationToken);
-            return;
+        if (message.StickerId != string.Empty) {
+            message = await SendStickerAsync(userId, message, cancellationToken);
         }
 
         if (message.Text != string.Empty) {
-            await SendTextMessageAsync(userId, message, cancellationToken);
-            return;
+            message = await SendTextMessageAsync(userId, message, cancellationToken);
         }
         
         _logger.LogWarning(SerializeObject(message));
     }
 
-    public abstract Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
+    protected abstract Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken);
 
-    public abstract Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
+    protected abstract Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken);
 }

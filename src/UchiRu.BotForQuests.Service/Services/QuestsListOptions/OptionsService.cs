@@ -15,21 +15,19 @@ public class OptionsService {
     public List<BotMessage> GetStartMessages() { 
         int count = _questionOptions.StartMessage.Count;
         var ret = _questionOptions.StartMessage;
-        ret[count - 1].Button = _questionOptions.StartButton;
-        ret[count - 1].ButtonCallback = _questionOptions.StartButtonCallback;
         return ret;
     }
     
-    public BotMessage GetQuestByUserLevel(int level) {
+    public List<BotMessage> GetQuestByUserLevel(int level) {
         if (level >= CountMessages) {
             return _questionOptions.EndMessage;
         }
 
         if (level < 0) {
-            return new BotMessage();
+            return _questionOptions.StartMessage;
         }
-        
-        return _questionOptions.QuestUnits[level];
+
+        return new List<BotMessage>() { _questionOptions.QuestUnits[level] };
     }
 
     public bool IsTrueAnswer(string answer, int level) => 

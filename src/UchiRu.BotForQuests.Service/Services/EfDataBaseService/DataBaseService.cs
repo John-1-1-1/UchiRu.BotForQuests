@@ -7,16 +7,14 @@ public class DataBaseService {
         _usersContext = usersContext;
     }
     
-    public string AddUser(long fromId, int level) {
+    public void AddUser(long fromId, int level) {
         var user = _usersContext.User.FirstOrDefault(u => u.UserId == fromId);
         
         if (user == null) {
             _usersContext.User.Add(new User() 
                 {  UserId = fromId, Level = level});
         }
-        
         _usersContext.SaveChanges();
-        return string.Empty;
     }
 
     public void UpdateUser(long fromId, int level) {
