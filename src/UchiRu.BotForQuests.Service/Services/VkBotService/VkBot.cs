@@ -7,7 +7,7 @@ namespace UchiRu.BotForQuests.Service.Services.VkBotService;
 public class VkBot {
     private readonly IConfiguration _configuration;
 
-    private VkApi api = new VkApi();
+    private VkApi api = new();
     
     public VkBot(IConfiguration configuration) {
         _configuration = configuration;

@@ -10,109 +10,126 @@ public class TelegramBot: TelegramBotBase{
     private readonly OptionsService _optionsService;
     private readonly DataBaseService _dataBaseService;
     private readonly ILogger<TelegramBot> _logger;
-
     public TelegramBot(
-        OptionsService optionsService,
-        DataBaseService dataBaseService,
-        IConfiguration configuration,
-        ILoggerFactory loggerFactory) : base(configuration)
-    {
+        OptionsService optionsService, DataBaseService dataBaseService,
+        IConfiguration configuration, ILoggerFactory loggerFactory) :
+        base(configuration, optionsService, loggerFactory) {
         _optionsService = optionsService;
         _dataBaseService = dataBaseService;
         _logger = loggerFactory.CreateLogger<TelegramBot>();
     }
     
-    private async Task CheckResult(string message, int level, long userId, 
+    private async Task CheckResult(string message, int userLevel, long userId, 
         CancellationToken cancellationToken) {
-        if (level < 0) {
+        if (userLevel < 0) {
             return;
         }
 
-        if (level >= _optionsService.CountMessages) {
+        if (userLevel >= _optionsService.CountMessages) {
             return;
         }
 
-        if (_optionsService.IsTrueAnswer(message, level))
+        if (_optionsService.IsTrueAnswer(message, userLevel))
         {
-            level += 1;
-            _dataBaseService.UpdateUser(userId, level);
-            var newTextQuestUnit = _optionsService.GetQuestByUserLevel(level);
+            userLevel += 1;
+            _dataBaseService.UpdateUser(userId, userLevel);
             
-            await SendMessage(
-                new BotMessage() { 
-                    Text = newTextQuestUnit.Question, 
-                    Image = newTextQuestUnit.Image
-                }, userId, cancellationToken); 
+            await SendListMessagesByUserLevel(userLevel, userId, cancellationToken);
         }
         else {
             await SendMessage(
-                new BotMessage() { Text = "Неверно. Пожалуйста не используйте пробелы, знаки препинания и специальные символы", 
+                new BotMessage() { Text = _optionsService.ErrorMessage(), 
                 }, userId, cancellationToken); 
         }
     }
 
-    public async Task SendMessage(BotMessage message, long userId, CancellationToken cancellationToken) {
-        if (message.Image != string.Empty) {
-            await SendImageAsync(userId, message, cancellationToken);
-        }
-        else if (message.File != string.Empty) {
-            await SendFileAsync(userId, message, cancellationToken);
-        }
-        else {
-            await SendTextMessageAsync(userId, message, cancellationToken);
-        }
-    }
-    
-    public override async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
+    protected override async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,
         CancellationToken cancellationToken) {
-
         _logger.LogInformation(SerializeObject(update));
         
         if (update.Type == Telegram.Bot.Types.Enums.UpdateType.CallbackQuery) {
-            var message = _dataBaseService.AddUser(update.CallbackQuery!.From.Id, 0);
-            if (message != string.Empty) {
-                await SendMessage(new BotMessage() {Text = message},
-                    update.CallbackQuery.From.Id, cancellationToken);
+
+            var callbackQuery = update.CallbackQuery;
+            if (callbackQuery == null) {
+                throw new ArgumentNullException(nameof(callbackQuery));
             }
 
-            await SendMessage(new BotMessage() {Text = _optionsService.GetQuestByUserLevel(0).Question},
-                update.CallbackQuery.From.Id, cancellationToken);
-        }
-        
-        if(update.Type == Telegram.Bot.Types.Enums.UpdateType.Message) {
+            var userId = callbackQuery.From.Id;
 
-            var userLevel = _dataBaseService.GetUserLevel(update.Message.From.Id);
-            var message = update.Message;
+            var userLevel = _dataBaseService.GetUserLevel(userId);
             
-            if (message.Text == null) {
+            await AnswerCallbackQueryAsync(update);
+            
+            if (userLevel != -1) {
                 return;
             }
             
-            if (message.Text == "/deleteMe") {
-                _dataBaseService.DeleteUser(update.Message.From.Id);
+            _dataBaseService.AddUser(userId, 0);
+            userLevel = _dataBaseService.GetUserLevel(userId);
+            await SendListMessagesByUserLevel(userLevel ,userId, cancellationToken);
+        }
+        
+        if(update.Type == Telegram.Bot.Types.Enums.UpdateType.Message) {
+            var message = update.Message;
+            if (message == null) {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            var userId = message.Chat.Id;
+            var userLevel = _dataBaseService.GetUserLevel(userId);
+
+            if (message.Text == null) {
+                return; 
             }
             
-            if (message.Text.ToLower() == "/start" && userLevel == -1) {
-                await SendStartImages(message, cancellationToken);
+            foreach (var keyboardText in _optionsService.Keyboard) {
+                if (keyboardText.IsCommand(message.Text)) {
+                    message.Text = keyboardText.Command;
+                    await CommandsHandler(message, userLevel, cancellationToken);
+                    return;
+                }
             }
-            else {
-                await CheckResult(message.Text.ToLower(), 
-                    userLevel, message.Chat.Id, cancellationToken);
-            }
+            
+            await CheckResult(message.Text.ToLower(), 
+                    userLevel, userId, cancellationToken);
         }
     }
 
-    private async Task SendStartImages(Message message, CancellationToken cancellationToken) {
-        foreach (var mess in _optionsService.GetStartMessages()) {
+    private async Task CommandsHandler(Message message, int userLevel, CancellationToken cancellationToken) {
+        var userId = message.Chat.Id;
+        if (message.Text == _listCommands.RestartCommand) {
+            _dataBaseService.DeleteUser(userId);
+            await SendListMessagesByUserLevel(_dataBaseService.GetUserLevel(userId)
+                , userId, cancellationToken);
+        }
+
+        if (message.Text == _listCommands.ListResultsCommand) {
+            var result = _dataBaseService.GetResults();
+            var resultInString = string.Join("\n", result.Keys.Select(key =>
+                string.Concat("level","[",key.ToString(), "]", "=", result[key].ToString())));
             await SendMessage(new BotMessage() {
-                Text = mess.Text, Image = mess.Image, Button = mess.Button,
-                ButtonCallback = mess.ButtonCallback
-            }, message.Chat.Id, cancellationToken);
+                Text = resultInString }, message.Chat.Id, cancellationToken);
+        }
+            
+        if (message.Text == _listCommands.StartCommand && userLevel == -1) {
+            await SendListMessagesByUserLevel(userLevel, userId, cancellationToken);
+        }
+
+        if (message.Text == _listCommands.ReplayQuestion) {
+            await SendListMessagesByUserLevel(userLevel, userId, cancellationToken);
         }
     }
-    
-    public override async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
+
+    private async Task SendListMessagesByUserLevel(int userLevel, long userId,
+        CancellationToken cancellationToken) {
+        foreach (var botMessage in _optionsService.GetQuestByUserLevel(userLevel)) {
+            await SendMessage(botMessage, userId, cancellationToken); 
+        }
+    }
+
+    protected override Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken) {
         _logger.LogError(exception.Message);
+        return Task.CompletedTask;
     }
 }
