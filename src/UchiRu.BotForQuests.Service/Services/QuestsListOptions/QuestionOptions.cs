@@ -12,7 +12,7 @@ public class QuestionOptions {
 public class KeyboardText {
     public string Text { get; set; } = string.Empty;
     public bool IsCommand(string command) => 
-        command.ToLower() == Text.ToLower() || Command == command.ToLower();
+        command.ToLower() == Text.ToLower() || Command == command;
     public string Command { get; set; } = string.Empty;
 
     public string Visible { get; set; } = string.Empty;

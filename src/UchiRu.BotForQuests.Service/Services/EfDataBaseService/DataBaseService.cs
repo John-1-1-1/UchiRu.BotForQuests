@@ -51,7 +51,7 @@ public class DataBaseService {
                 memberLevels[user.Level] += 1;
             }
             else {
-                memberLevels[user.Level] = 0;
+                memberLevels[user.Level] = 1;
             }
         }
 
